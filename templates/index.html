@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <style>
+        /* General Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #2E073F;
+            color:#441752;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            width: 40%;
+            height: 50%;
+            background: #EBD3F8;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #441752;
+        }
+
+        textarea {
+            width: 80%;
+            height: 20%;
+            border: 2px solid #6A1E55;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            background: #F9FAFB;
+            color: #4C585B;
+            transition: border-color 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        textarea:focus {
+            border-color: #543A14;
+            outline: none;
+        }
+
+        button {
+            width: 70%;
+            background: #7A1CAC;
+            color:rgb(255, 255, 255);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        button:hover {
+            background-color:#AD49E1;
+        }
+
+        .output {
+            width: 50%;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: #FFFFFF;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .output.positive {
+            background-color: #5CB338;
+        }
+
+        .output.negative {
+            background-color: #FB4141;
+        }
+
+        .divider {
+            height: 2px;
+            background: #441752;
+            margin: 0 -20px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #441752;
+        }
+    </style>
+    <script>
+        async function getPrediction() {
+            const text = document.getElementById("inputText").value;
+            const outputDiv = document.getElementById("output");
+
+            if (!text.trim()) {
+                outputDiv.style.display = "block";
+                outputDiv.className = "output negative";
+                outputDiv.innerHTML = "Please enter some text!";
+                return;
+            }
+
+            outputDiv.style.display = "none"; // Hide output while waiting for response
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text }),
+                });
+
+                const result = await response.json();
+                outputDiv.style.display = "block";
+                if (result.status === 'success') {
+                    outputDiv.className = `output ${result.prediction === 'positive' ? 'positive' : 'negative'}`;
+                    outputDiv.innerHTML = result.prediction.toUpperCase();
+                } else {
+                    outputDiv.className = "output negative";
+                    outputDiv.innerHTML = `Error: ${result.message}`;
+                }
+            } catch (error) {
+                outputDiv.style.display = "block";
+                outputDiv.className = "output negative";
+                outputDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="card">
+        <h1>Sentiment Analysis</h1>
+        <textarea id="inputText" placeholder="Type your text here..."></textarea>
+        <button onclick="getPrediction()">Analyze</button>
+        <div class="divider"></div>
+        <div id="output" class="output"></div>
+        <div class="footer">
+            Powered by Sentiment AI
+        </div>
+    </div>
+</body>
+</html>
